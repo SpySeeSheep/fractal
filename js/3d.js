@@ -103,14 +103,14 @@ let phi = 0,
     angularSpeed = THREE.Math.degToRad(40);
 let radiusZ = camera.position.z;
 
-let len = 30,
+let len = 40,
     beg = new THREE.Vector3(0, 0, 0),
     color = 0x5c0f0f,
     radius = 1,
     alpha = THREE.Math.degToRad(20),
     oldAlpha = Math.PI / 2,
-    iter = 6,
-    beta = THREE.Math.degToRad(30),
+    iter = 15,
+    beta = THREE.Math.degToRad(40),
     p = 1;
 
 // drawCylinder(color)(radius)(beg)(new THREE.Vector3(-10, 150, 80));
