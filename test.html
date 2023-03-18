@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Test</title>
+</head>
+
+<body>
+    <script src="js/three.js"></script>
+    <script>
+        let scene = new THREE.Scene(),
+            camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 0.1, 1000),
+            renderer = new THREE.WebGLRenderer();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        function init() {
+            let points = [];
+            let color = [];
+        }
+
+        camera.position.z = 5;
+
+        let material = new THREE.LineBasicMaterial({
+            vertexColors: true,
+            morphTargets: true
+        });
+
+        init();
+
+        renderer.render(scene, camera);
+
+        // let a = new THREE.Vector3(1, 2, 1),
+        //     b = new THREE.Vector3(100, 100, 1),
+        //     c = new THREE.Vector3(44, -25, 1),
+        //     m = new THREE.Vector3((b.x + c.x) / 2, (b.y + c.y) / 2, (b.z + c.z) / 2);
+        // let material = new THREE.LineBasicMaterial({
+        //     color: 0xff0000
+        // });
+        // let ab = new THREE.BufferGeometry().setFromPoints([a, b]),
+        //     bc = new THREE.BufferGeometry().setFromPoints([b, c]),
+        //     ac = new THREE.BufferGeometry().setFromPoints([a, c])
+        // am = new THREE.BufferGeometry().setFromPoints([a, m]);
+        // let line = new THREE.Line(ab, material);
+        // scene.add(line);
+        // let line2 = new THREE.Line(ac, material);
+        // scene.add(line2);
+        // let line3 = new THREE.Line(bc, material);
+        // scene.add(line3);
+        // let line4 = new THREE.Line(am, material);
+        // scene.add(line4);
+        // renderer.render(scene, camera);
+    </script>
+</body>
+
+</html>

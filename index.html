@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type: text/html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tree</title>
+</head>
+
+<body>
+    <style>
+        body {
+            margin: 0 auto;
+            padding: 0;
+        }
+        .menu {
+            -webkit-box-sizing: content-box;
+            -moz-box-sizing: content-box;
+            box-sizing: content-box;
+            width: 20%;
+            height: auto;
+            position: absolute;
+            left: 75%;
+            top: 15px;
+            padding: 20px;
+            overflow: hidden;
+            border: none;
+            font: normal 16px/1 "Times New Roman", Times, serif;
+            color: rgb(0, 0, 0);
+            text-align: center;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            background: #ffffff;
+            -webkit-box-shadow: 0 0 6px 2px rgba(0,0,0,0.5) , 1px 1px 1px 0 rgba(0,0,0,0.3) ;
+            box-shadow: 0 0 6px 2px rgba(0,0,0,0.5) , 1px 1px 1px 0 rgba(0,0,0,0.3) ;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.2) ;
+            }
+            .load{
+                z-index: 1;
+                
+                position: absolute;
+                left: 50%;
+                top: 50%;
+            }
+    </style>
+    <div class="menu">
+        <div>Длина дерева: <input type="number" name="length" id="len" style="width: 70px;"></div>
+        <div>Количество итераций: <input type="number" name="" id="iter" style="width: 60px;"></div>
+        Вероятность 0<input type="range" name="Вероятность" id="p">100 <br>
+        <input type="checkbox" name="Толстые линии" id="isFat"> Толстые линии <br>
+        <div id="width-box" style="display: none;" disabled="disabled">Толщина 1<input type="range" name="Толщина" id="width">10</div>
+        Угол (rad) <input id="alpha" type="number" style="width: 40px;"> <br>
+        <div>Начальный угол дерева: <input type="number" name="Угол дерева" id="oldAlpha" style="width: 60px;"></div>
+        
+        <button id="reset">Обновить</button>
+        <div id="dark-box"> <input type="checkbox" name="dark" id="dark"> Темная тема</div>
+    </div>
+    <div class="load" style="display: none;"><img src="159.gif" /></div>
+    <!-- <canvas id="img" style="width: 100%; height: 100%"></canvas> -->
+
+    <!-- <script src="js/THREE.MeshLine.js"></script> -->
+    <script src="js/three.js"></script>
+    <script>
+        let scene = new THREE.Scene(),
+            camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 10, 20),
+            renderer = new THREE.WebGLRenderer();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        camera.position.y = window.innerHeight / 3;
+        camera.position.z = 11;
+        
+        let radius = 1;
+        // Рисует трубки
+        function drawLine(beg, end, len, c) {
+            var lineMaterial = new THREE.LineBasicMaterial({ color: c });
+
+            let linePoints = [];
+            linePoints.push(beg, end);
+
+            // Create Tube Geometry
+            var tubeGeometry = new THREE.TubeGeometry(
+                new THREE.CatmullRomCurve3(linePoints),
+                64,// path segments
+                radius,// THICKNESS
+                8, //Roundness of Tube
+                false //closed
+            );
+            //add buffer geometry
+            let tubeBufferGeomtry = new THREE.BufferGeometry().fromGeometry( tubeGeometry );
+            let line = new THREE.Line(tubeGeometry, lineMaterial);
+            scene.add(line);
+            renderer.render(scene, camera);
+        }
+        // Рисует линии из примитива GL_LINES
+        function drawLine1(beg, end, len, c) {
+            let geometry = new THREE.BufferGeometry();
+            geometry.setFromPoints([beg, end]);
+
+            let material = new THREE.LineBasicMaterial({
+                color: c
+            });
+            let line = new THREE.LineSegments(geometry, material);
+            scene.add(line);
+            renderer.render(scene, camera);
+        }
+
+        function renderTree(f, iter, p, alpha, oldAlpha, len, beg, c) {
+            if (iter == 0) return;
+            let gg = 0x003000,
+                rr = 0x010000,
+                bb = 0x000020;
+            let end = new THREE.Vector3((oldAlpha < 90) ? beg.x - len * Math.cos(oldAlpha) :
+                beg.x + len * Math.cos(oldAlpha), (oldAlpha < 90) ? beg.y + len * Math.sin(oldAlpha) :
+                beg.y + len * Math.sin(oldAlpha), 0);
+            f(beg, end, iter, c);
+            beg = end;
+            if (Math.random() < p) {
+                let k = 0.3 - 0.3 * Math.random();
+                renderTree(f,iter - 1, p, alpha, oldAlpha - alpha * k, len - len * k, beg, c + gg - rr + bb);
+            }
+            if (Math.random() < p) {
+                let k = 0.3 - 0.3 * Math.random();
+                renderTree(f, iter - 1, p, alpha, oldAlpha + alpha * k, len - len * k, beg, c + gg - rr + bb);
+            }
+            let nold = oldAlpha + (Math.random() <= 0.5) ? alpha * Math.random() : -Math.random() * alpha;
+            renderTree(f, iter - 1, p, alpha, oldAlpha, len - len * (0.5 - 0.5 * Math.random()), beg, c - rr + bb);
+
+        }
+
+
+        let bgcolor = new THREE.Color(0xffffff);
+        let len = 150,
+            oldAlpha = Math.PI / 2,
+            alpha = 0.3,
+            p = 75 / 100,
+            iter = 5,
+            color = 0x5c0000,
+            xb = 0,
+            yb = 0;
+        let beg = new THREE.Vector3(xb, yb, 0),
+            end = new THREE.Vector3(xb, yb + len, 0);
+        let draw = drawLine;
+
+
+        function isChecked(obj, selector = '') {
+            let widthBox ;
+            if (selector == '') return obj.checked;
+            widthBox = document.querySelector(selector);
+            if(obj.checked){
+                widthBox.style.display = "";
+                widthBox.removeAttribute('disabled');                       
+            }
+            else{
+                draw = drawLine1;
+                widthBox.style.display = "none";
+                widthBox.setAttribute('disabled', 'disabled');
+            }
+            return obj.checked;
+        }
+
+        function initVariables() {
+            const nlen = document.getElementById('len').value || 150;
+            const nalpha = document.getElementById('alpha').value || Math.PI / 6;
+            const niter = document.getElementById('iter').value || 7;
+            const pp = document.getElementById('p').value / 100 || 0.75;
+            const nradius = document.getElementById('width').value / 20 || 2;
+            const noldAlpha = document.getElementById('oldAlpha').value || Math.PI / 2;
+
+            len = nlen;
+            alpha = nalpha;
+            oldAlpha = noldAlpha;
+            iter = niter;
+            p = pp;
+            radius = nradius;
+            return true;
+        }
+        
+        let darkBox = document.getElementById('dark-box');
+        darkBox.addEventListener('click', () =>{
+            if (isChecked (document.getElementById('dark'))) bgcolor.set(0x000000);
+            else bgcolor.set(0xffffff);
+            scene.background = bgcolor;
+            renderer.render(scene, camera);
+        });
+
+        let isFat = document.getElementById('isFat');
+        isFat.addEventListener('click', (ev) => {
+            if(isChecked(isFat, '#width-box')) draw = drawLine;
+            else draw = drawLine1;
+        });
+
+        document.getElementById('reset').addEventListener('click', (ev) =>{
+            while(scene.children.length > 0){ 
+                scene.remove(scene.children[0]); 
+            }
+            initVariables();
+            let load = document.querySelector('.load');
+            load.style.display = '';
+            renderTree(draw, iter, p, alpha, oldAlpha, len, beg, color);
+            console.log('complite!');
+            load.style.display = 'none';
+        });
+
+        window.onload = function () {
+            scene.background = bgcolor;
+            if(isChecked(isFat, '#width-box')) draw = drawLine;
+            else draw = drawLine1;
+            if (isChecked (document.getElementById('dark'))) bgcolor.set(0x000000);
+            else bgcolor.set(0xffffff);
+            scene.background = bgcolor;
+            initVariables();
+            let load = document.querySelector('.load');
+            load.style.display = '';
+            renderTree(draw, iter, p, alpha, oldAlpha, len, beg, color);
+            console.log('complite!');
+            load.style.display = 'none';
+            
+        }
+        
+
+        let canvas = document.getElementsByTagName('canvas');
+        canvas.addEventListener('click', function(ev){
+            console.log('asdasd');
+        });
+    </script>
+</body>
+
+</html>
